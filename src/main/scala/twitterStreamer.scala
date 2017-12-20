@@ -23,6 +23,8 @@ import org.I0Itec.zkclient.ZkConnection
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.KafkaProducer
 
+import com.fortysevendeg.log.utils.Kafka_func._
+
 object twitterStreamer extends App {
   System.setProperty("twitter4j.oauth.consumerKey", "CCZNPiKwLvb0pGtp8RRDVq7bQ")
   System.setProperty("twitter4j.oauth.consumerSecret", "h1GuGvRGdEbKH2hRrgjST9xTWrjlwLaVDrLYjK6e9v9FqKVWDk")
@@ -95,52 +97,16 @@ object twitterStreamer extends App {
   // If no master is given as part of the configuration we
   // will set it to be a local deployment running an
   // executor per thread
-
-  /* *********************** Create Kafka Producer *********************** */
-  def createKafkaProducer(): Producer[String, String] = {
-    val props = new Properties()
-    props.put("metadata.broker.list", "localhost:9092")
-    props.put("serializer.class", "kafka.serializer.StringEncoder")
-//    props.put("partitioner.class", "com.fortysevendeg.biglog.SimplePartitioner")
-//    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-//    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-    props.put("producer.type", "async")
-    props.put("request.required.acks", "1")
-
-    val config = new ProducerConfig(props)
-    new Producer[String, String](config)
-
-
-  }
-
-  def createKafkaConsumer(): KafkaConsumer[String, String] = {
-    val props = new Properties()
-    props.put("bootstrap.servers", "localhost:9092")
-    props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
-    props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
-
-    new KafkaConsumer[String, String](props)
-  }
-
-  def createTopicIntoKafka(topic: String, numPartitions: Int, replicationFactor: Int): Unit = {
-    val zookeeperConnect = "localhost:2181"
-    val sessionTimeoutMs = 10 * 1000
-    val connectionTimeoutMs = 8 * 1000
-
-    val zkClient = ZkUtils.createZkClient(zookeeperConnect, sessionTimeoutMs, connectionTimeoutMs)
-    val zkUtils = new ZkUtils(zkClient, zkConnection = new ZkConnection(zookeeperConnect), isSecure = false)
-    AdminUtils.createTopic(zkUtils, topic, numPartitions, replicationFactor, new Properties)
-    zkClient.close()
-  }
-
-  def d(kafkaProducer: Producer[String, String], topic: String, message: String) = {
-    kafkaProducer.send(new KeyedMessage[String, String](topic, message))
-  }
-
-
+/* *********************** Kafka Part *********************** */
   val producer = createKafkaProducer()
-  d(producer,"test", "Testing")
-  /* *********************** Create Kafka Producer *********************** */
+
+  d(producer,"testtopic", "Testing")
+  val cons = createKafkaConsumer()
+
+  printMessagesConsumer(cons)
+  
+  
+  /* *********************** Kafka Part *********************** */
 
 
   val sparkConfiguration = new SparkConf().
