@@ -7,10 +7,7 @@ import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkConnection
 import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer}
-import java.util
 
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.apache.kafka.clients.consumer.ConsumerRecords
 import java.util
 
 
