@@ -55,7 +55,7 @@ object TwitterProducer extends App {
 
   val producer = createKafkaProducer()
 
-  val keywordsToSearch = Seq()
+  val keywordsToSearch = Seq("#NFL", "#NHL", "#MLB", "#NBA")
   val tweets = TwitterUtils.createStream(streamingContext, None, keywordsToSearch)
 
   d(producer, "testtopic", "Hello Out there")
