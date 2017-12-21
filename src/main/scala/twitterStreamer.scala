@@ -1,29 +1,6 @@
-//import org.apache.spark._
-//import org.apache.spark.storage._
-//import org.apache.spark.streaming._
-//import org.apache.spark.streaming.twitter.TwitterUtils
-//
-//import scala.math.Ordering
-//
-//import twitter4j.auth.OAuthAuthorization
-//import twitter4j.conf.ConfigurationBuilder
-//import twitter4j.Status
-
-import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.twitter.TwitterUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
-import twitter4j.Status
-import java.util.Properties
-
-import kafka.admin.AdminUtils
-import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import kafka.utils.ZkUtils
-import org.I0Itec.zkclient.ZkConnection
-import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.KafkaProducer
-
-import com.fortysevendeg.log.utils.Kafka_func._
 
 object twitterStreamer extends App {
   System.setProperty("twitter4j.oauth.consumerKey", "CCZNPiKwLvb0pGtp8RRDVq7bQ")
@@ -33,85 +10,17 @@ object twitterStreamer extends App {
 
   println("Hello")
 
-  // Directory to output top hashtags
-//  val outputDirectory = "/twitter"
-//
-//  // Recompute the top hashtags every 1 second
-//  val slideInterval = new Duration(1 * 1000)
-//
-//  // Compute the top hashtags for the last 5 seconds
-//  val windowLength = new Duration(5 * 1000)
-//
-//  // Wait this many seconds before stopping the streaming job
-//  val timeoutJobLength = 100 * 1000
-//
-//  var newContextCreated = false
-//  var num = 0
-//
-//  // This is a helper class used for
-//  object SecondValueOrdering extends Ordering[(String, Int)] {
-//    def compare(a: (String, Int), b: (String, Int)) = {
-//      a._2 compare b._2
-//    }
-//  }
-//
-//  // This is the function that creates the SteamingContext and sets up the Spark Streaming job.
-//  def creatingFunc(): StreamingContext = {
-//    // Create a Spark Streaming Context.
-//    val conf = new SparkConf().setAppName("Assignment 5").setMaster("local[*]").set("spark.sql.session.timeZone", "PST")
-//
-//    val sc = new SparkContext(conf)
-//
-//    val ssc = new StreamingContext(sc, slideInterval)
-//    // Create a Twitter Stream for the input source.
-//    val auth = Some(new OAuthAuthorization(new ConfigurationBuilder().build()))
-//    val twitterStream = TwitterUtils.createStream(ssc, auth)
-//
-//    // Parse the tweets and gather the hashTags.
-//    val hashTagStream = twitterStream.map(_.getText).flatMap(_.split(" ")).filter(_.startsWith("#"))
-//
-//    // Compute the counts of each hashtag by window.
-//    val windowedhashTagCountStream = hashTagStream.map((_, 1)).reduceByKeyAndWindow((x: Int, y: Int) => x + y, windowLength, slideInterval)
-//
-//    // For each window, calculate the top hashtags for that time period.
-//    windowedhashTagCountStream.foreachRDD(hashTagCountRDD => {
-//      val topEndpoints = hashTagCountRDD.top(10)(SecondValueOrdering)
-//      println(s"------ TOP HASHTAGS For window ${num}")
-//      println(topEndpoints.mkString("\n"))
-//      num = num + 1
-//    })
-//
-//    newContextCreated = true
-//    ssc
-//}
-//
-//  val ssc = StreamingContext.getActiveOrCreate(creatingFunc)
-//  ssc.start()
-//  ssc.awaitTerminationOrTimeout(timeoutJobLength)
-  // You can find all functions used to process the stream in the
-  // Utils.scala source file, whose contents we import here
-  import Utils._
-
   // First, let's configure Spark
   // We have to at least set an application name and master
   // If no master is given as part of the configuration we
   // will set it to be a local deployment running an
   // executor per thread
-/* *********************** Kafka Part *********************** */
-  val producer = createKafkaProducer()
-
-  d(producer,"testtopic", "Testing")
-  val cons = createKafkaConsumer()
-
-  printMessagesConsumer(cons)
-  
-  
-  /* *********************** Kafka Part *********************** */
-
-
   val sparkConfiguration = new SparkConf().
     setAppName("spark-twitter-stream-example").
     setMaster(sys.env.get("spark.master").getOrElse("local[*]"))
+  // Create KafkaProducer
+  val producer = new kafkaIO()
+  producer.printMessagesConsumer()
 
   // Let's create the Spark Context using the configuration we just created
   val sparkContext = new SparkContext(sparkConfiguration)
@@ -159,9 +68,9 @@ object twitterStreamer extends App {
 //  textAndNonNeutralScore.map(makeReadable).print
 
 //  // Now that the streaming is defined, start it
-//  streamingContext.start()
+  streamingContext.start()
 //
 //  // Let's await the stream to end - forever
-//  streamingContext.awaitTermination()
+  streamingContext.awaitTermination()
 
 }
