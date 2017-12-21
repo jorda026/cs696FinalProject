@@ -58,16 +58,22 @@ object TwitterProducer extends App {
   val keywordsToSearch = Seq("#NFL", "#NHL", "#MLB", "#NBA")
   val tweets = TwitterUtils.createStream(streamingContext, None, keywordsToSearch)
 
-  d(producer, "testtopic", "Hello Out there")
+  val kafkaTopic = "testtopic"
+  sendData(producer, kafkaTopic, "Hello Out there")
   tweets.foreachRDD(tweetsRDD => {
     tweetsRDD.foreachPartition(tweetsRDDPartition => {
       tweetsRDDPartition.foreach(tweet => {
         println(tweet.getText())
-        d(producer, "testtopic", (new JSONObject(tweetToMap(tweet))).toString())
-        //d(producer, "testtopic", tweet.getText())
-      })
+        sendData(producer, kafkaTopic, (new JSONObject(tweetToMap(tweet))).toString())
       })
     })
+  })
   streamingContext.start()
-  streamingContext.awaitTermination()
+  val seconds = 10
+  val streamDuration = seconds * 1000
+  // Let's await the stream to end - streamDuration
+  streamingContext.awaitTerminationOrTimeout(streamDuration)
+  // Once the timeout has been reached, stop the stream and the Spark context
+  StreamingContext.getActive.foreach { _.stop(true,true) }
+
 }

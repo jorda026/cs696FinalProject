@@ -3,21 +3,23 @@ package com.fortysevendeg.log.utils
 import java.util.Properties
 
 import kafka.admin.AdminUtils
-import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkConnection
-import org.apache.kafka.clients.consumer.{ConsumerRecord, ConsumerRecords, KafkaConsumer}
-
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import java.util
+
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import org.apache.kafka.common.serialization.StringSerializer
 
 
 
 object Kafka_func {
 
   /* *********************** Create Kafka Stuff *********************** */
-  def createKafkaProducer(): Producer[String, String] = {
+  def createKafkaProducer(): KafkaProducer[String, String] = {
     val props = new Properties()
     props.put("metadata.broker.list", "localhost:9092")
+    props.put("bootstrap.servers", "localhost:9092")
     props.put("serializer.class", "kafka.serializer.StringEncoder")
     //    props.put("partitioner.class", "com.fortysevendeg.biglog.SimplePartitioner")
     //    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
@@ -25,8 +27,8 @@ object Kafka_func {
     props.put("producer.type", "async")
     props.put("request.required.acks", "1")
 
-    val config = new ProducerConfig(props)
-    new Producer[String, String](config)
+    val config = new KafkaProducer(props, new StringSerializer(), new StringSerializer())
+    return config
 
 
   }
@@ -69,8 +71,8 @@ object Kafka_func {
     }
 
 
-  def d(kafkaProducer: Producer[String, String], topic: String, message: String) = {
-    kafkaProducer.send(new KeyedMessage[String, String](topic, message))
+  def sendData(kafkaProducer: KafkaProducer[String, String], topic: String, message: String) = {
+    kafkaProducer.send(new ProducerRecord[String, String](topic, message))
   }
 
 
